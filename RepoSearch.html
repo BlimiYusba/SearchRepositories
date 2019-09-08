@@ -1,0 +1,125 @@
+﻿
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="jquery-1.10.2.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <nav class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar" style="background-color:black; height:100px">
+        <span class="d-block px-3 py-2 text-center text-bold text-white old-bv " style="font-size:x-large">
+            Repositories search
+        </span>
+    </nav>
+    <div ng-app="myApp" ng-controller="myCtrl">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 mx-auto">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search for..." id="txtSearch" ng-model="txtSearch">
+                        <span class="input-group-btn">
+                            <button class="btn btn-secondary" type="button" id="btnSearch" value="Search">Go!</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="sidebar col-lg-3 mx-auto" style="display: inline-block; float: left;margin-left: 24px; word-wrap: break-word; left: 0; background-color: #fcfbbf; display: inline-block; ">
+            <h3>Booked mark repositories:</h3>
+            <div class="sidebar widget">
+                <ul class="repo-list-item small" ng-repeat="x in chosen">
+                    <li class="repo-list-item d-flex flex-column flex-md-row flex-justify-start py-4 public source" style="">
+                        <div class="col-12 col-md-8 pr-md-3">
+                            <h3>
+                                <a class="v-align-middle" style="color:#0094ff">{{x.name}}</a>
+                            </h3>
+                            <p class="col-12 col-md-9 d-inline-block text-gray mb-2 pr-4" style="font-size: smaller">
+                                {{x.description}}
+                            </p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="col-lg-8 mx-auto">
+                <ul class="repo-list" ng-repeat="x in Repo">
+                    <li class="repo-list-item d-flex flex-column flex-md-row flex-justify-start py-4 public source">
+                        <div class="col-12 col-md-8 pr-md-3">
+                            <h3>
+                                <a class="v-align-middle" style="color:#0094ff">{{x.name}}</a>
+                            </h3>
+                            <p class="col-12 col-md-9 d-inline-block text-gray mb-2 pr-4">
+                                {{x.description}}
+
+                            </p>
+
+                        </div>
+                        <div class=" flex-shrink-0 col-8 col-md-4 pt-2 pr-md-3 d-flex">
+                            <div class="text-gray flex-auto min-width-0">
+                                <div class="mr-3">
+                                    <img class="rounded pull-right h-25" alt="..." ng-src="{{x.owner.avatar_url}}" style="width: 100px; height: 200px" />
+                                    <span>
+                                        <button type="button" class="btn btn-default btn-lg" id="Mark" ng-click="Marked($index)"></button>
+                                       
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script src="angular.js"></script>
+    <script src="angular-route.js"></script>
+    <script src="angular-ui-router.js"></script>
+    <script language="javascript">
+        var app = angular.module('myApp', []);
+        app.controller('myCtrl', function ($scope) {
+            $scope.chosen = [];
+            //serach button clicked
+            $('#btnSearch').on('click', function (e) {
+                var SearchName = document.getElementById("txtSearch").value
+                var KeyWord = SearchName.toUpperCase();
+                // Create a request variable and assign a new XMLHttpRequest object to it.
+                var request = new XMLHttpRequest()
+                // Open a new connection, using the GET request on the URL endpoint
+                request.open('GET', 'https://api.github.com/search/repositories?q=' + KeyWord, true)
+                request.onload = function () {
+                    // Begin accessing JSON data here
+                    var data = JSON.parse(this.response);
+                    $scope.Repo = data.items;
+                    $scope.$apply();
+                }
+                // Send request
+                request.send()
+            });
+            //when clicked on bookmark
+            $scope.Marked = function (x) {
+                var obj = $scope.Repo[x]
+                var data = JSON.stringify(obj);
+                //gets object from repo array
+                var obj = $scope.Repo[x];
+                //checks of saved to session
+                if (sessionStorage.getItem("Repo" + x)) {
+                    //if saved session remove from session and from the chosen rapo
+                    sessionStorage.removeItem("Repo" + x);
+                    index = $scope.chosen.map(function (e) { return e.id; }).indexOf(obj.id);
+                    $scope.chosen.splice(index, 1);
+                }
+                else {
+                    //save to session and add to chosen repo
+                    sessionStorage.setItem("Repo" + x, JSON.stringify(obj));
+                    $scope.chosen.push(obj);
+                }
+
+            };
+        });
+    </script>
+
+</body>
+</html>
